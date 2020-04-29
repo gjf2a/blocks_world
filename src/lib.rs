@@ -3,7 +3,7 @@ mod methods;
 
 #[cfg(test)]
 mod tests {
-    use crate::operators::{BlockState, BlockGoals};
+    use crate::operators::{BlockState, BlockGoals, BlockOperator};
     use anyhop::{find_first_plan, Task, Atom};
     use crate::methods::BlockMethod;
 
@@ -13,11 +13,12 @@ mod tests {
 
     #[test]
     pub fn test1() {
-        use Block::*;
+        use Block::*; use BlockOperator::*;
         let state = BlockState::from(vec![B, C], vec![(A, B)]).unwrap();
         let goal = BlockGoals::new(vec![(A, B), (B, C)]);
         let plan = find_first_plan(&state, &goal,
-                                   &vec![Task::MethodTag(BlockMethod::MoveBlocks)], 3);
-        println!("{:?}", plan.unwrap());
+                                   &vec![Task::MethodTag(BlockMethod::MoveBlocks)], 3).unwrap();
+        println!("{:?}", plan);
+        assert_eq!(plan, vec![Unstack(A, B), PutDown(A), PickUp(B), Stack(B, C), PickUp(A), Stack(A, B)]);
     }
 }
