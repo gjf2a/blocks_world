@@ -13,7 +13,6 @@ pub fn is_done<B:Atom>(b1: B, state: &BlockState<B>, goal: &BlockGoals<B>) -> bo
 pub enum Status<B:Atom> {
     Done(B),
     Inaccessible(B),
-    Table(B),
     Move(B,BlockPos<B>),
     Waiting(B)
 }
@@ -42,7 +41,7 @@ pub enum BlockMethod<B:Atom> {
     MoveBlocks,
     MoveOne(B, BlockPos<B>),
     Get(B),
-    Put(B, BlockPos<B>)
+    Put(BlockPos<B>)
 }
 
 impl <B:Atom> Atom for BlockMethod<B> {}
@@ -53,9 +52,9 @@ for BlockMethod<B> {
         use BlockMethod::*;
         match self {
             MoveBlocks => move_blocks(state, goal),
-            MoveOne(block, pos) => move_one(state, *block, *pos),
+            MoveOne(block, pos) => move_one(*block, *pos),
             Get(block) => get(state, *block),
-            Put(block, pos) => put(state, *block, *pos)
+            Put(pos) => put(state, *pos)
         }
     }
 }
@@ -64,7 +63,6 @@ fn move_blocks<B:Atom>(state: &BlockState<B>, goal: &BlockGoals<B>) -> Vec<Vec<T
     use BlockMethod::*;
     let status: Vec<Status<B>> = state.all_blocks().iter().map(|b| Status::new(*b, state, goal)).collect();
     for stat in status.iter() {
-        println!("status: {:?}", stat);
         if let Status::Move(b, pos) = stat {
             return vec![vec![Task::MethodTag(MoveOne(*b, *pos)), Task::MethodTag(MoveBlocks)]]
         }
@@ -79,8 +77,8 @@ fn move_blocks<B:Atom>(state: &BlockState<B>, goal: &BlockGoals<B>) -> Vec<Vec<T
     if waiting.len() == 0 {vec![vec![]]} else {waiting}
 }
 
-fn move_one<B:Atom>(state: &BlockState<B>, block: B, pos: BlockPos<B>) -> Vec<Vec<Task<BlockOperator<B>, BlockMethod<B>>>> {
-    vec![vec![Task::MethodTag(BlockMethod::Get(block)), Task::MethodTag(BlockMethod::Put(block, pos))]]
+fn move_one<B:Atom>(block: B, pos: BlockPos<B>) -> Vec<Vec<Task<BlockOperator<B>, BlockMethod<B>>>> {
+    vec![vec![Task::MethodTag(BlockMethod::Get(block)), Task::MethodTag(BlockMethod::Put(pos))]]
 }
 
 fn get<'a, B:Atom>(state: &BlockState<B>, block: B) -> Vec<Vec<Task<BlockOperator<B>, BlockMethod<B>>>> {
@@ -94,7 +92,7 @@ fn get<'a, B:Atom>(state: &BlockState<B>, block: B) -> Vec<Vec<Task<BlockOperato
     }
 }
 
-fn put<'a, B:Atom>(state: &BlockState<B>, block: B, pos: BlockPos<B>) -> Vec<Vec<Task<BlockOperator<B>, BlockMethod<B>>>> {
+fn put<'a, B:Atom>(state: &BlockState<B>, pos: BlockPos<B>) -> Vec<Vec<Task<BlockOperator<B>, BlockMethod<B>>>> {
     if let Some(b) = state.get_holding() {
         match pos {
             BlockPos::Table => vec![vec![Task::Operator(BlockOperator::PutDown(b))]],
@@ -105,7 +103,7 @@ fn put<'a, B:Atom>(state: &BlockState<B>, block: B, pos: BlockPos<B>) -> Vec<Vec
 
 impl <B:Atom> MethodTag<BlockState<B>, BlockGoals<B>, BlockOperator<B>, BlockMethod<B>, BlockMethod<B>>
 for BlockMethod<B> {
-    fn candidates(&self, state: &BlockState<B>, goal: &BlockGoals<B>) -> Vec<BlockMethod<B>> {
+    fn candidates(&self, _state: &BlockState<B>, _goal: &BlockGoals<B>) -> Vec<BlockMethod<B>> {
         vec![*self]
     }
 }
