@@ -70,12 +70,13 @@ fn move_blocks<B:Atom>(state: &BlockState<B>, goal: &BlockGoals<B>) -> Vec<Vec<T
         }
     }
 
-    status.iter()
+    let waiting: Vec<Vec<Task<BlockOperator<B>, BlockMethod<B>>>> = status.iter()
         .filter_map(|s| match s {
             Status::Waiting(b) => Some(vec![Task::MethodTag(MoveOne(*b, BlockPos::Table)),Task::MethodTag(MoveBlocks)]),
             _ => None
         })
-        .collect()
+        .collect();
+    if waiting.len() == 0 {vec![vec![]]} else {waiting}
 }
 
 fn move_one<B:Atom>(state: &BlockState<B>, block: B, pos: BlockPos<B>) -> Vec<Vec<Task<BlockOperator<B>, BlockMethod<B>>>> {
