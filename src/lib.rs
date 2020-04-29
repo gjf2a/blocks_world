@@ -8,16 +8,16 @@ mod tests {
     use crate::methods::BlockMethod;
 
     #[derive(Copy, Clone, Debug, Ord, PartialOrd, Eq, PartialEq)]
-    enum Block {B(char)}
+    enum Block {A,B,C}
     impl Atom for Block {}
 
     #[test]
     pub fn test1() {
-        use Block::B;
-        let state = BlockState::from(vec![B('b'), B('c')], vec![(B('a'), B('b'))]).unwrap();
-        let goal = BlockGoals::new(vec![(B('a'), B('b')), (B('b'), B('c'))]);
+        use Block::*;
+        let state = BlockState::from(vec![B, C], vec![(A, B)]).unwrap();
+        let goal = BlockGoals::new(vec![(A, B), (B, C)]);
         let plan = find_first_plan(&state, &goal,
-                                   &vec![Task::MethodTag(BlockMethod::MoveBlocks)], 1);
+                                   &vec![Task::MethodTag(BlockMethod::MoveBlocks)], 3);
         println!("{:?}", plan.unwrap());
     }
 }

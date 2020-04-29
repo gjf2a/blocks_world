@@ -54,6 +54,7 @@ impl <B:Atom> BlockState<B> {
     pub fn from(table: Vec<B>, block_piles: Vec<(B,B)>) -> Option<Self> {
         let mut all_blocks = table;
         let mut piles: Vec<B> = block_piles.iter().map(|p| p.0).collect();
+        println!("all_blocks: {:?} piles: {:?}", all_blocks, piles);
         all_blocks.append(&mut piles);
         let mut result = BlockState::new(all_blocks);
         for (top, bottom) in block_piles {
@@ -66,8 +67,9 @@ impl <B:Atom> BlockState<B> {
 
     pub fn all_blocks(&self) -> Vec<B> {
         let mut result = Vec::new();
-        self.stacks.iter().map(|entry| result.push(*entry.0));
+        self.stacks.iter().for_each(|entry| result.push(*entry.0));
         self.table.iter().for_each(|b| result.push(*b));
+        println!("result: {:?}", result);
         result
     }
 

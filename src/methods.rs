@@ -27,7 +27,7 @@ impl <B:Atom> Status<B> {
         } else {
             match goal.get_pos(b) {
                 BlockPos::Table => Status::Move(b, BlockPos::Table),
-                BlockPos::On(b2) => if state.clear(b2) {
+                BlockPos::On(b2) => if is_done(b2, state, goal) && state.clear(b2) {
                     Status::Move(b, BlockPos::On(b2))
                 } else {
                     Status::Waiting(b)
@@ -47,7 +47,8 @@ pub enum BlockMethod<B:Atom> {
 
 impl <B:Atom> Atom for BlockMethod<B> {}
 
-impl <B:Atom> Method<BlockState<B>, BlockGoals<B>, BlockOperator<B>, BlockMethod<B>, BlockMethod<B>> for BlockMethod<B> {
+impl <B:Atom> Method<BlockState<B>, BlockGoals<B>, BlockOperator<B>, BlockMethod<B>, BlockMethod<B>>
+for BlockMethod<B> {
     fn apply(&self, state: &BlockState<B>, goal: &BlockGoals<B>) -> Vec<Vec<Task<BlockOperator<B>, BlockMethod<B>>>> {
         use BlockMethod::*;
         match self {
@@ -63,6 +64,7 @@ fn move_blocks<B:Atom>(state: &BlockState<B>, goal: &BlockGoals<B>) -> Vec<Vec<T
     use BlockMethod::*;
     let status: Vec<Status<B>> = state.all_blocks().iter().map(|b| Status::new(*b, state, goal)).collect();
     for stat in status.iter() {
+        println!("status: {:?}", stat);
         if let Status::Move(b, pos) = stat {
             return vec![vec![Task::MethodTag(MoveOne(*b, *pos)), Task::MethodTag(MoveBlocks)]]
         }
