@@ -1,5 +1,5 @@
 use super::operators::*;
-use anyhop::{Atom, Method, MethodTag, Task};
+use anyhop::{Atom, Method, MethodTag, Task, MethodResult};
 
 pub fn is_done<B:Atom>(b1: B, state: &BlockState<B>, goal: &BlockGoals<B>) -> bool {
     let pos = state.get_pos(b1);
@@ -48,7 +48,7 @@ impl <B:Atom> Atom for BlockMethod<B> {}
 
 impl <B:Atom> Method<BlockState<B>, BlockGoals<B>, BlockOperator<B>, BlockMethod<B>, BlockMethod<B>>
 for BlockMethod<B> {
-    fn apply(&self, state: &BlockState<B>, goal: &BlockGoals<B>) -> Vec<Vec<Task<BlockOperator<B>, BlockMethod<B>>>> {
+    fn apply(&self, state: &BlockState<B>, goal: &BlockGoals<B>) -> MethodResult<BlockOperator<B>, BlockMethod<B>> {
         use BlockMethod::*;
         match self {
             MoveBlocks => move_blocks(state, goal),
@@ -59,46 +59,51 @@ for BlockMethod<B> {
     }
 }
 
-fn move_blocks<B:Atom>(state: &BlockState<B>, goal: &BlockGoals<B>) -> Vec<Vec<Task<BlockOperator<B>, BlockMethod<B>>>> {
-    use BlockMethod::*;
+fn move_blocks<B:Atom>(state: &BlockState<B>, goal: &BlockGoals<B>) -> MethodResult<BlockOperator<B>, BlockMethod<B>> {
+    use BlockMethod::*; use MethodResult::*; use Task::*;
     let status: Vec<Status<B>> = state.all_blocks().iter().map(|b| Status::new(*b, state, goal)).collect();
     for stat in status.iter() {
         if let Status::Move(b, pos) = stat {
-            return vec![vec![Task::MethodTag(MoveOne(*b, *pos)), Task::MethodTag(MoveBlocks)]]
+            return TaskLists(vec![vec![MethodTag(MoveOne(*b, *pos)), MethodTag(MoveBlocks)]])
         }
     }
 
     let waiting: Vec<Vec<Task<BlockOperator<B>, BlockMethod<B>>>> = status.iter()
         .filter_map(|s| match s {
-            Status::Waiting(b) => Some(vec![Task::MethodTag(MoveOne(*b, BlockPos::Table)),Task::MethodTag(MoveBlocks)]),
+            Status::Waiting(b) => Some(vec![MethodTag(MoveOne(*b, BlockPos::Table)),MethodTag(MoveBlocks)]),
             _ => None
         })
         .collect();
-    if waiting.len() == 0 {vec![vec![]]} else {waiting}
+    if waiting.len() == 0 {PlanFound} else {TaskLists(waiting)}
 }
 
-fn move_one<B:Atom>(block: B, pos: BlockPos<B>) -> Vec<Vec<Task<BlockOperator<B>, BlockMethod<B>>>> {
-    vec![vec![Task::MethodTag(BlockMethod::Get(block)), Task::MethodTag(BlockMethod::Put(pos))]]
+fn move_one<B:Atom>(block: B, pos: BlockPos<B>) -> MethodResult<BlockOperator<B>, BlockMethod<B>> {
+    use BlockMethod::*; use MethodResult::*; use Task::*;
+    TaskLists(vec![vec![MethodTag(Get(block)), MethodTag(Put(pos))]])
 }
 
-fn get<'a, B:Atom>(state: &BlockState<B>, block: B) -> Vec<Vec<Task<BlockOperator<B>, BlockMethod<B>>>> {
+fn get<'a, B:Atom>(state: &BlockState<B>, block: B) -> MethodResult<BlockOperator<B>, BlockMethod<B>> {
+    use BlockOperator::*; use MethodResult::*; use Task::*; use BlockPos::*;
     if state.clear(block) {
-        match state.get_pos(block) {
-            BlockPos::Table => vec![vec![Task::Operator(BlockOperator::PickUp(block))]],
-            BlockPos::On(block2) => vec![vec![Task::Operator(BlockOperator::Unstack(block, block2))]]
-        }
+        TaskLists(match state.get_pos(block) {
+            Table => vec![vec![Operator(PickUp(block))]],
+            On(block2) => vec![vec![Operator(Unstack(block, block2))]]
+        })
     } else {
-        vec![]
+        Failure
     }
 }
 
-fn put<'a, B:Atom>(state: &BlockState<B>, pos: BlockPos<B>) -> Vec<Vec<Task<BlockOperator<B>, BlockMethod<B>>>> {
+fn put<'a, B:Atom>(state: &BlockState<B>, pos: BlockPos<B>) -> MethodResult<BlockOperator<B>, BlockMethod<B>> {
+    use BlockOperator::*; use MethodResult::*; use Task::*; use BlockPos::*;
     if let Some(b) = state.get_holding() {
-        match pos {
-            BlockPos::Table => vec![vec![Task::Operator(BlockOperator::PutDown(b))]],
-            BlockPos::On(b2) => vec![vec![Task::Operator(BlockOperator::Stack(b, b2))]]
-        }
-    } else {vec![]}
+        TaskLists(match pos {
+            Table => vec![vec![Operator(PutDown(b))]],
+            On(b2) => vec![vec![Operator(Stack(b, b2))]]
+        })
+    } else {
+        Failure
+    }
 }
 
 impl <B:Atom> MethodTag<BlockState<B>, BlockGoals<B>, BlockOperator<B>, BlockMethod<B>, BlockMethod<B>>

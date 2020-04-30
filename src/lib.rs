@@ -10,7 +10,7 @@ mod tests {
     use BlockOperator::*;
 
     #[derive(Copy, Clone, Debug, Ord, PartialOrd, Eq, PartialEq)]
-    enum Block {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z}
+    enum Block {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S}
     impl Atom for Block {}
 
     #[test]
