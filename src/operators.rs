@@ -59,20 +59,19 @@ impl <B:Atom> BlockState<B> {
         state
     }
 
-    // The block pairs should be in the order that they are to be stacked.
-    // So the bottom pair is first, the pair above it next, and so forth.
-    // It returns None if it can't easily make a plan.
-    pub fn from(table: Vec<B>, block_piles: Vec<(B,B)>) -> Option<Self> {
+    pub fn from(table: Vec<B>, block_piles: Vec<(B,B)>) -> Self {
         let mut all_blocks = table;
         let mut piles: Vec<B> = block_piles.iter().map(|p| p.0).collect();
         all_blocks.append(&mut piles);
         let mut result = BlockState::new(all_blocks);
+
         for (top, bottom) in block_piles {
-            if !(result.pick_up(top) & result.stack(top, bottom)) {
-                return None
-            }
+            result.stacks.insert(top, bottom);
+            result.clear.remove(&bottom);
+            result.table.remove(&top);
         }
-        Some(result)
+
+        result
     }
 
     pub fn all_blocks(&self) -> Vec<B> {
