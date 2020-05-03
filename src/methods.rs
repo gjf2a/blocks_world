@@ -111,4 +111,8 @@ for BlockMethod<B> {
     fn candidates(&self, _state: &BlockState<B>, _goal: &BlockGoals<B>) -> Vec<BlockMethod<B>> {
         vec![*self]
     }
+
+    fn starting_tasks(state: &BlockState<B>, goal: &BlockGoals<B>) -> Vec<Task<BlockOperator<B>, BlockMethod<B>>> {
+        vec![Task::MethodTag(BlockMethod::MoveBlocks)]
+    }
 }
