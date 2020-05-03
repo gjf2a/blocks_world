@@ -72,7 +72,7 @@ mod tests {
         let (start, goal) = big_test_states();
         for strategy in vec![Alternate(LeastRecent), Steady(LeastRecent), Steady(MostRecent)] {
             for apply_cutoff in vec![false, true] {
-                let outcome: AnytimePlanner<BlockState<Block>, BlockGoals<Block>, BlockOperator<Block>, BlockMethod<Block>, BlockMethod<Block>, usize> = AnytimePlanner::plan(&start, &goal, None, strategy, &|p| p.len(), 1, apply_cutoff);
+                let outcome = AnytimePlanner::plan(&start, &goal, None, strategy, &|p| p.len(), 1, apply_cutoff);
                 println!("strategy: {:?}\napply_cutoff: {}\n{}", strategy, apply_cutoff, outcome.report())
             }
         }
