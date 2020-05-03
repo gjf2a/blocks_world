@@ -1,5 +1,5 @@
 use super::operators::*;
-use anyhop::{Atom, Method, MethodTag, Task, MethodResult};
+use anyhop::{Atom, Method, MethodTag, Task, MethodResult, Goal};
 
 pub fn is_done<B:Atom>(b1: B, state: &BlockState<B>, goal: &BlockGoals<B>) -> bool {
     let pos = state.get_pos(b1);
@@ -111,8 +111,10 @@ for BlockMethod<B> {
     fn candidates(&self, _state: &BlockState<B>, _goal: &BlockGoals<B>) -> Vec<BlockMethod<B>> {
         vec![*self]
     }
+}
 
-    fn starting_tasks(state: &BlockState<B>, goal: &BlockGoals<B>) -> Vec<Task<BlockOperator<B>, BlockMethod<B>>> {
+impl <B:Atom> Goal<BlockState<B>, BlockGoals<B>, BlockOperator<B>, BlockMethod<B>, BlockMethod<B>> for BlockGoals<B> {
+    fn starting_tasks(&self) -> Vec<Task<BlockOperator<B>, BlockMethod<B>>> {
         vec![Task::MethodTag(BlockMethod::MoveBlocks)]
     }
 }
