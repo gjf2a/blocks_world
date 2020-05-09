@@ -44,8 +44,6 @@ pub enum BlockMethod<B:Atom> {
     Put(BlockPos<B>)
 }
 
-impl <B:Atom> Atom for BlockMethod<B> {}
-
 impl <B:Atom> Method<BlockState<B>, BlockGoals<B>, BlockOperator<B>, BlockMethod<B>, BlockMethod<B>>
 for BlockMethod<B> {
     fn apply(&self, state: &BlockState<B>, goal: &BlockGoals<B>) -> MethodResult<BlockOperator<B>, BlockMethod<B>> {

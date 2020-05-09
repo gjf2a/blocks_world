@@ -1,5 +1,5 @@
 use std::collections::{BTreeSet, BTreeMap};
-use anyhop::{Atom, Operator, Orderable};
+use anyhop::{Atom, Operator};
 
 pub fn is_valid<B:Atom>(plan: &Vec<BlockOperator<B>>, start: &BlockState<B>, goal: &BlockGoals<B>) -> bool {
     let mut state = start.clone();
@@ -41,8 +41,6 @@ pub struct BlockState<B:Atom> {
     clear: BTreeSet<B>,
     holding: Option<B>
 }
-
-impl <B:Atom> Orderable for BlockState<B> {}
 
 #[derive(Copy, Clone, PartialOrd, PartialEq, Ord, Eq, Debug)]
 pub enum BlockPos<B:Atom> {
@@ -139,8 +137,6 @@ impl <B:Atom> BlockState<B> {
 pub enum BlockOperator<B:Atom> {
     PickUp(B), PutDown(B), Stack(B,B), Unstack(B,B)
 }
-
-impl <B:Atom> Atom for BlockOperator<B> {}
 
 impl <B:Atom> Operator<BlockState<B>> for BlockOperator<B> {
     fn attempt_update(&self, state: &mut BlockState<B>) -> bool {

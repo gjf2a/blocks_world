@@ -2,16 +2,8 @@ use sexpy::*;
 use crate::operators::{BlockState, BlockGoals};
 use std::{io,fs};
 use std::collections::HashMap;
-use anyhop::Atom;
 
-#[derive(Copy,Clone,Debug,Ord,PartialOrd,Eq,PartialEq)]
-pub enum B {
-    B(usize)
-}
-
-impl Atom for B {}
-
-pub fn make_block_problem_from(pddl_file: &str) -> io::Result<(BlockState<B>, BlockGoals<B>)> {
+pub fn make_block_problem_from(pddl_file: &str) -> io::Result<(BlockState<usize>, BlockGoals<usize>)> {
     let contents = fs::read_to_string(pddl_file)?.to_lowercase();
     match Define::parse(contents.as_str()) {
         Ok(parsed) => Ok(parsed.init_and_goal()),
@@ -29,10 +21,10 @@ struct Define {
 }
 
 impl Define {
-    pub fn init_and_goal(&self) -> (BlockState<B>, BlockGoals<B>) {
+    pub fn init_and_goal(&self) -> (BlockState<usize>, BlockGoals<usize>) {
         let mut objects = HashMap::new();
         for object in self.objects.objs.iter() {
-            objects.insert(String::from(object), B::B(objects.len()));
+            objects.insert(String::from(object), objects.len());
         }
         let mut table = Vec::new();
         let mut stacks = Vec::new();
@@ -53,13 +45,13 @@ impl Define {
     }
 }
 
-fn decode_on(p: &Predicate, objects: &HashMap<String,B>) -> (B, B) {
+fn decode_on(p: &Predicate, objects: &HashMap<String,usize>) -> (usize, usize) {
     let top = obj_get(p, objects, 0);
     let bottom = obj_get(p, objects, 1);
     (top, bottom)
 }
 
-fn obj_get(p: &Predicate, objects: &HashMap<String,B>, i: usize) -> B {
+fn obj_get(p: &Predicate, objects: &HashMap<String,usize>, i: usize) -> usize {
     *objects.get(p.predicate_args[i].as_str()).unwrap()
 }
 

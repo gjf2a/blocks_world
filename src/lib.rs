@@ -13,11 +13,9 @@ mod tests {
     use Block::*;
     use BlockOperator::*;
     use crate::pddl_parser::make_block_problem_from;
-    use crate::pddl_parser::B;
 
     #[derive(Copy, Clone, Debug, Ord, PartialOrd, Eq, PartialEq)]
     pub enum Block {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S}
-    impl Atom for Block {}
 
     #[test]
     pub fn test1() {
@@ -55,15 +53,15 @@ mod tests {
     #[test]
     pub fn test_pddl_4_0() {
         let (start, goal) = make_block_problem_from("probBLOCKS-4-0.pddl").unwrap();
-        assert_eq!(start, BlockState::from(vec![B::B(2), B::B(0), B::B(1), B::B(3)], vec![]));
-        assert_eq!(goal, BlockGoals::new(vec![(B::B(0), B::B(3)), (B::B(1), B::B(2)), (B::B(3), B::B(1))]));
+        assert_eq!(start, BlockState::from(vec![2, 0, 1, 3], vec![]));
+        assert_eq!(goal, BlockGoals::new(vec![(0, 3), (1, 2), (3, 1)]));
     }
 
     #[test]
     pub fn test_pddl_4_1() {
         let (start, goal) = make_block_problem_from("probBLOCKS-4-1.pddl").unwrap();
-        assert_eq!(start, BlockState::from(vec![B::B(2)], vec![(B::B(0), B::B(2)), (B::B(1), B::B(0)), (B::B(3), B::B(1))]));
-        assert_eq!(goal, BlockGoals::new(vec![(B::B(0), B::B(3)), (B::B(1), B::B(0)), (B::B(2), B::B(1))]));
+        assert_eq!(start, BlockState::from(vec![2], vec![(0, 2), (1, 0), (3, 1)]));
+        assert_eq!(goal, BlockGoals::new(vec![(0, 3), (1, 0), (2, 1)]));
     }
 
     #[test]
@@ -73,7 +71,7 @@ mod tests {
         for strategy in vec![Alternate(LeastRecent), Steady(LeastRecent), Steady(MostRecent)] {
             for apply_cutoff in vec![false, true] {
                 let outcome = AnytimePlanner::plan(&start, &goal, None, strategy, &|p| p.len(), 1, apply_cutoff);
-                println!("strategy: {:?}\napply_cutoff: {}\n{}", strategy, apply_cutoff, outcome.report())
+                println!("strategy: {:?}\napply_cutoff: {}\n{}", strategy, apply_cutoff, outcome.instance_csv());
             }
         }
     }
