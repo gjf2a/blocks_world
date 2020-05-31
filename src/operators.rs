@@ -138,7 +138,9 @@ pub enum BlockOperator<B:Atom> {
     PickUp(B), PutDown(B), Stack(B,B), Unstack(B,B)
 }
 
-impl <B:Atom> Operator<BlockState<B>> for BlockOperator<B> {
+impl <B:Atom> Operator for BlockOperator<B> {
+    type S = BlockState<B>;
+
     fn attempt_update(&self, state: &mut BlockState<B>) -> bool {
         use BlockOperator::*;
         match self {

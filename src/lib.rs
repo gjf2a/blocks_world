@@ -8,7 +8,7 @@ pub mod pddl_parser;
 #[cfg(test)]
 mod tests {
     use crate::operators::{BlockState, BlockGoals, BlockOperator, is_valid};
-    use anyhop::{find_first_plan, Task, Atom, BacktrackPreference, BacktrackStrategy, AnytimePlanner};
+    use anyhop::{find_first_plan, Task, Atom, BacktrackPreference, BacktrackStrategy, AnytimePlannerBuilder};
     use crate::methods::BlockMethod;
     use Block::*;
     use BlockOperator::*;
@@ -70,7 +70,11 @@ mod tests {
         let (start, goal) = big_test_states();
         for strategy in vec![Alternate(LeastRecent), Steady(LeastRecent), Steady(MostRecent)] {
             for apply_cutoff in vec![false, true] {
-                let outcome = AnytimePlanner::plan(&start, &goal, None, strategy, &|p| p.len(), 1, apply_cutoff);
+                let outcome = AnytimePlannerBuilder::state_goal(&start, &goal)
+                    .apply_cutoff(apply_cutoff)
+                    .strategy(strategy)
+                    .verbose(1)
+                    .construct();
                 println!("strategy: {:?}\napply_cutoff: {}\n{}", strategy, apply_cutoff, outcome.instance_csv());
             }
         }

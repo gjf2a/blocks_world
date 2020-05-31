@@ -44,8 +44,12 @@ pub enum BlockMethod<B:Atom> {
     Put(BlockPos<B>)
 }
 
-impl <B:Atom> Method<BlockState<B>, BlockGoals<B>, BlockOperator<B>, BlockMethod<B>, BlockMethod<B>>
-for BlockMethod<B> {
+impl <B:Atom> Method for BlockMethod<B> {
+    type S = BlockState<B>;
+    type G = BlockGoals<B>;
+    type O = BlockOperator<B>;
+    type T = BlockMethod<B>;
+
     fn apply(&self, state: &BlockState<B>, goal: &BlockGoals<B>) -> MethodResult<BlockOperator<B>, BlockMethod<B>> {
         use BlockMethod::*;
         match self {
@@ -104,14 +108,20 @@ fn put<'a, B:Atom>(state: &BlockState<B>, pos: BlockPos<B>) -> MethodResult<Bloc
     }
 }
 
-impl <B:Atom> MethodTag<BlockState<B>, BlockGoals<B>, BlockOperator<B>, BlockMethod<B>, BlockMethod<B>>
-for BlockMethod<B> {
+impl <B:Atom> MethodTag for BlockMethod<B> {
+    type S = BlockState<B>;
+    type G = BlockGoals<B>;
+    type M = BlockMethod<B>;
+
     fn candidates(&self, _state: &BlockState<B>, _goal: &BlockGoals<B>) -> Vec<BlockMethod<B>> {
         vec![*self]
     }
 }
 
-impl <B:Atom> Goal<BlockState<B>, BlockGoals<B>, BlockOperator<B>, BlockMethod<B>, BlockMethod<B>> for BlockGoals<B> {
+impl <B:Atom> Goal for BlockGoals<B> {
+    type O = BlockOperator<B>;
+    type T = BlockMethod<B>;
+
     fn starting_tasks(&self) -> Vec<Task<BlockOperator<B>, BlockMethod<B>>> {
         vec![Task::MethodTag(BlockMethod::MoveBlocks)]
     }
