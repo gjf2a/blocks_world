@@ -83,7 +83,7 @@ fn move_one<B:Atom>(block: B, pos: BlockPos<B>) -> MethodResult<BlockOperator<B>
     TaskLists(vec![vec![Method(Get(block)), Method(Put(pos))]])
 }
 
-fn get<'a, B:Atom>(state: &BlockState<B>, block: B) -> MethodResult<BlockOperator<B>, BlockMethod<B>> {
+fn get<B:Atom>(state: &BlockState<B>, block: B) -> MethodResult<BlockOperator<B>, BlockMethod<B>> {
     use BlockOperator::*; use MethodResult::*; use Task::*; use BlockPos::*;
     if state.clear(block) {
         TaskLists(match state.get_pos(block) {
@@ -95,7 +95,7 @@ fn get<'a, B:Atom>(state: &BlockState<B>, block: B) -> MethodResult<BlockOperato
     }
 }
 
-fn put<'a, B:Atom>(state: &BlockState<B>, pos: BlockPos<B>) -> MethodResult<BlockOperator<B>, BlockMethod<B>> {
+fn put<B:Atom>(state: &BlockState<B>, pos: BlockPos<B>) -> MethodResult<BlockOperator<B>, BlockMethod<B>> {
     use BlockOperator::*; use MethodResult::*; use Task::*; use BlockPos::*;
     if let Some(b) = state.get_holding() {
         TaskLists(match pos {
