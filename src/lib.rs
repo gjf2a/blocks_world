@@ -22,7 +22,7 @@ mod tests {
         let start = BlockState::from(vec![B, C], vec![(A, B)]);
         let goal = BlockGoals::new(vec![(A, B), (B, C)]);
         let plan = find_first_plan(&start, &goal,
-                                   &vec![Task::MethodTag(BlockMethod::MoveBlocks)], 3).unwrap();
+                                   &vec![Task::Method(BlockMethod::MoveBlocks)], 3).unwrap();
         println!("{:?}", plan);
         assert_eq!(plan, vec![Unstack(A, B), PutDown(A), PickUp(B), Stack(B, C), PickUp(A), Stack(A, B)]);
         assert!(is_valid(&plan, &start, &goal));
@@ -32,7 +32,7 @@ mod tests {
     pub fn test2() {
         let start = BlockState::from(vec![C, D], vec![(A, C), (B, D)]);
         let goal = BlockGoals::new(vec![(B, C), (A, D)]);
-        let plan = find_first_plan(&start, &goal, &vec![Task::MethodTag(BlockMethod::MoveBlocks)], 3).unwrap();
+        let plan = find_first_plan(&start, &goal, &vec![Task::Method(BlockMethod::MoveBlocks)], 3).unwrap();
         println!("{:?}", plan);
         assert!(is_valid(&plan, &start, &goal));
     }
@@ -45,7 +45,7 @@ mod tests {
     #[test]
     pub fn test3() {
         let (start, goal) = big_test_states();
-        let plan = find_first_plan(&start, &goal, &vec![Task::MethodTag(BlockMethod::MoveBlocks)], 3).unwrap();
+        let plan = find_first_plan(&start, &goal, &vec![Task::Method(BlockMethod::MoveBlocks)], 3).unwrap();
         println!("{:?}", plan);
         assert!(is_valid(&plan, &start, &goal));
     }

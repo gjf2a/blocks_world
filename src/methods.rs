@@ -1,5 +1,5 @@
 use super::operators::*;
-use anyhop::{Atom, Method, MethodTag, Task, MethodResult, Goal};
+use anyhop::{Atom, Method, Task, MethodResult, Goal};
 
 pub fn is_done<B:Atom>(b1: B, state: &BlockState<B>, goal: &BlockGoals<B>) -> bool {
     let pos = state.get_pos(b1);
@@ -48,7 +48,6 @@ impl <B:Atom> Method for BlockMethod<B> {
     type S = BlockState<B>;
     type G = BlockGoals<B>;
     type O = BlockOperator<B>;
-    type T = BlockMethod<B>;
 
     fn apply(&self, state: &BlockState<B>, goal: &BlockGoals<B>) -> MethodResult<BlockOperator<B>, BlockMethod<B>> {
         use BlockMethod::*;
@@ -66,13 +65,13 @@ fn move_blocks<B:Atom>(state: &BlockState<B>, goal: &BlockGoals<B>) -> MethodRes
     let status: Vec<Status<B>> = state.all_blocks().iter().map(|b| Status::new(*b, state, goal)).collect();
     for stat in status.iter() {
         if let Status::Move(b, pos) = stat {
-            return TaskLists(vec![vec![MethodTag(MoveOne(*b, *pos)), MethodTag(MoveBlocks)]])
+            return TaskLists(vec![vec![Method(MoveOne(*b, *pos)), Method(MoveBlocks)]])
         }
     }
 
     let waiting: Vec<Vec<Task<BlockOperator<B>, BlockMethod<B>>>> = status.iter()
         .filter_map(|s| match s {
-            Status::Waiting(b) => Some(vec![MethodTag(MoveOne(*b, BlockPos::Table)),MethodTag(MoveBlocks)]),
+            Status::Waiting(b) => Some(vec![Method(MoveOne(*b, BlockPos::Table)),Method(MoveBlocks)]),
             _ => None
         })
         .collect();
@@ -81,7 +80,7 @@ fn move_blocks<B:Atom>(state: &BlockState<B>, goal: &BlockGoals<B>) -> MethodRes
 
 fn move_one<B:Atom>(block: B, pos: BlockPos<B>) -> MethodResult<BlockOperator<B>, BlockMethod<B>> {
     use BlockMethod::*; use MethodResult::*; use Task::*;
-    TaskLists(vec![vec![MethodTag(Get(block)), MethodTag(Put(pos))]])
+    TaskLists(vec![vec![Method(Get(block)), Method(Put(pos))]])
 }
 
 fn get<'a, B:Atom>(state: &BlockState<B>, block: B) -> MethodResult<BlockOperator<B>, BlockMethod<B>> {
@@ -108,21 +107,11 @@ fn put<'a, B:Atom>(state: &BlockState<B>, pos: BlockPos<B>) -> MethodResult<Bloc
     }
 }
 
-impl <B:Atom> MethodTag for BlockMethod<B> {
-    type S = BlockState<B>;
-    type G = BlockGoals<B>;
-    type M = BlockMethod<B>;
-
-    fn candidates(&self, _state: &BlockState<B>, _goal: &BlockGoals<B>) -> Vec<BlockMethod<B>> {
-        vec![*self]
-    }
-}
-
 impl <B:Atom> Goal for BlockGoals<B> {
     type O = BlockOperator<B>;
-    type T = BlockMethod<B>;
+    type M = BlockMethod<B>;
 
     fn starting_tasks(&self) -> Vec<Task<BlockOperator<B>, BlockMethod<B>>> {
-        vec![Task::MethodTag(BlockMethod::MoveBlocks)]
+        vec![Task::Method(BlockMethod::MoveBlocks)]
     }
 }
