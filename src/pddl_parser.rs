@@ -44,11 +44,11 @@ fn extract_goals(parsed: &PddlProblem, objects: &BTreeMap<String,usize>) -> Vec<
 }
 
 fn decode_on(p: &Predicate, objects: &BTreeMap<String,usize>) -> (usize, usize) {
-    let top = obj_get(p, objects, 0);
-    let bottom = obj_get(p, objects, 1);
+    let top = obj_get(p.get_arg(0), objects);
+    let bottom = obj_get(p.get_arg(1), objects);
     (top, bottom)
 }
 
-fn obj_get(p: &Predicate, objects: &BTreeMap<String,usize>, i: usize) -> usize {
-    *objects.get(p.get_arg(i)).unwrap()
+fn obj_get(obj_name: &str, objects: &BTreeMap<String,usize>) -> usize {
+    *(objects.get(obj_name).unwrap())
 }
