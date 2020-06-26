@@ -3,7 +3,7 @@ use std::{io,fs};
 use std::collections::HashMap;
 use pddl_problem_parser::Predicate;
 
-pub fn make_block_problem_from(pddl_file: &str) -> io::Result<(BlockState<usize>, BlockGoals<usize>)> {
+pub fn make_block_problem_from(pddl_file: &str) -> io::Result<(BlockState, BlockGoals)> {
     let contents = fs::read_to_string(pddl_file)?;
     let parsed = pddl_problem_parser::PddlParser::parse(contents.as_str())?;
 

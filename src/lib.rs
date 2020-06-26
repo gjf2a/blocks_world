@@ -5,38 +5,35 @@ pub mod pddl_parser;
 #[cfg(test)]
 mod tests {
     use crate::operators::{BlockState, BlockGoals, BlockOperator, is_valid};
-    use anyhop::{find_first_plan, Task, Atom, BacktrackPreference, BacktrackStrategy, AnytimePlannerBuilder};
+    use anyhop::{find_first_plan, Task, BacktrackPreference, BacktrackStrategy, AnytimePlannerBuilder};
     use crate::methods::BlockMethod;
-    use Block::*;
     use BlockOperator::*;
     use crate::pddl_parser::make_block_problem_from;
 
-    #[derive(Copy, Clone, Debug, Ord, PartialOrd, Eq, PartialEq)]
-    pub enum Block {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S}
-
     #[test]
     pub fn test1() {
-        let start = BlockState::from(vec![B, C], vec![(A, B)]);
-        let goal = BlockGoals::new(vec![(A, B), (B, C)]);
+        let start = BlockState::from(vec![1, 2], vec![(0, 1)]);
+        let goal = BlockGoals::new(vec![(0, 1), (1, 2)]);
         let plan = find_first_plan(&start, &goal,
                                    &vec![Task::Method(BlockMethod::MoveBlocks)], 3).unwrap();
         println!("{:?}", plan);
-        assert_eq!(plan, vec![Unstack(A, B), PutDown(A), PickUp(B), Stack(B, C), PickUp(A), Stack(A, B)]);
+        assert_eq!(plan, vec![Unstack(0, 1), PutDown(0), PickUp(1), Stack(1, 2), PickUp(0), Stack(0, 1)]);
         assert!(is_valid(&plan, &start, &goal));
     }
 
     #[test]
     pub fn test2() {
-        let start = BlockState::from(vec![C, D], vec![(A, C), (B, D)]);
-        let goal = BlockGoals::new(vec![(B, C), (A, D)]);
+        let start = BlockState::from(vec![2, 3], vec![(0, 2), (1, 3)]);
+        let goal = BlockGoals::new(vec![(1, 2), (0, 3)]);
         let plan = find_first_plan(&start, &goal, &vec![Task::Method(BlockMethod::MoveBlocks)], 3).unwrap();
         println!("{:?}", plan);
         assert!(is_valid(&plan, &start, &goal));
     }
 
-    pub fn big_test_states() -> (BlockState<Block>, BlockGoals<Block>) {
-        (BlockState::from(vec![B,F,M,O],vec![(C, B), (P, C), (Q, P), (R, Q), (S, R), (G, F), (H, G), (I, H), (L, M), (A, L), (N, O), (D, N), (E, D), (J, E), (K, J)]),
-        BlockGoals::new(vec![(O, M), (M, H), (H, I), (I, D), (L, B), (B, C), (C, P), (P, K), (K, G), (G, F)]))
+    pub fn big_test_states() -> (BlockState, BlockGoals) {
+        (BlockState::from(vec![1,5,12,14],vec![(2, 1), (15, 2), (16, 15), (17, 16), (18, 17), (6, 5), (7, 6),
+                                               (8, 7), (11, 12), (0, 11), (13, 14), (3, 13), (4, 3), (9, 4), (10, 9)]),
+        BlockGoals::new(vec![(14, 12), (12, 7), (7, 8), (8, 3), (11, 1), (1, 2), (2, 15), (15, 10), (10, 6), (6, 5)]))
     }
 
     #[test]
