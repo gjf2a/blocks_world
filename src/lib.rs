@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate io_error;
-
 pub mod operators;
 pub mod methods;
 pub mod pddl_parser;
@@ -54,14 +51,14 @@ mod tests {
     pub fn test_pddl_4_0() {
         let (start, goal) = make_block_problem_from("probBLOCKS-4-0.pddl").unwrap();
         assert_eq!(start, BlockState::from(vec![2, 0, 1, 3], vec![]));
-        assert_eq!(goal, BlockGoals::new(vec![(0, 3), (1, 2), (3, 1)]));
+        assert_eq!(goal, BlockGoals::new(vec![(3, 2), (2, 1), (1, 0)]));
     }
 
     #[test]
     pub fn test_pddl_4_1() {
         let (start, goal) = make_block_problem_from("probBLOCKS-4-1.pddl").unwrap();
-        assert_eq!(start, BlockState::from(vec![2], vec![(0, 2), (1, 0), (3, 1)]));
-        assert_eq!(goal, BlockGoals::new(vec![(0, 3), (1, 0), (2, 1)]));
+        assert_eq!(start, BlockState::from(vec![3], vec![(1, 2), (2, 0), (0, 3)]));
+        assert_eq!(goal, BlockGoals::new(vec![(3, 2), (2, 0), (0, 1)]));
     }
 
     #[test]

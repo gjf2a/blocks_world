@@ -1,48 +1,32 @@
-use sexpy::*;
 use crate::operators::{BlockState, BlockGoals};
 use std::{io,fs};
 use std::collections::HashMap;
+use pddl_problem_parser::Predicate;
 
 pub fn make_block_problem_from(pddl_file: &str) -> io::Result<(BlockState<usize>, BlockGoals<usize>)> {
-    let contents = fs::read_to_string(pddl_file)?.to_lowercase();
-    match Define::parse(contents.as_str()) {
-        Ok(parsed) => Ok(parsed.init_and_goal()),
-        Err(e) => {println!("{}", e); Err(err!(Other, "oops"))}
+    let contents = fs::read_to_string(pddl_file)?;
+    let parsed = pddl_problem_parser::PddlParser::parse(contents.as_str())?;
+
+    let mut objects = HashMap::new();
+    for object in parsed.obj2type.keys() {
+        objects.insert(String::from(object), objects.len());
     }
-}
-
-#[derive(Sexpy)]
-struct Define {
-    problem: Problem,
-    domain: Domain,
-    objects: Objects,
-    init: Init,
-    goal: Goal
-}
-
-impl Define {
-    pub fn init_and_goal(&self) -> (BlockState<usize>, BlockGoals<usize>) {
-        let mut objects = HashMap::new();
-        for object in self.objects.objs.iter() {
-            objects.insert(String::from(object), objects.len());
+    let mut table = Vec::new();
+    let mut stacks = Vec::new();
+    for pred in parsed.bool_state.iter() {
+        if pred.get_tag() == "ontable" {
+            table.push(*objects.get(pred.get_arg(0)).unwrap());
+        } else if pred.get_tag() == "on" {
+            stacks.push(decode_on(&pred, &objects));
         }
-        let mut table = Vec::new();
-        let mut stacks = Vec::new();
-        for pred in self.init.predicates.iter() {
-            if pred.predicate_type == "ontable" {
-                table.push(*objects.get(pred.predicate_args[0].as_str()).unwrap());
-            } else if pred.predicate_type == "on" {
-                stacks.push(decode_on(&pred, &objects));
-            }
-        }
-
-        let mut goals = Vec::new();
-        for goal in self.goal.and.goals.iter() {
-            goals.push(decode_on(&goal, &objects));
-        }
-
-        (BlockState::from(table, stacks), BlockGoals::new(goals))
     }
+
+    let mut goals = Vec::new();
+    for goal in parsed.goals.iter() {
+        goals.push(decode_on(&goal, &objects));
+    }
+
+    Ok((BlockState::from(table, stacks), BlockGoals::new(goals)))
 }
 
 fn decode_on(p: &Predicate, objects: &HashMap<String,usize>) -> (usize, usize) {
@@ -52,46 +36,5 @@ fn decode_on(p: &Predicate, objects: &HashMap<String,usize>) -> (usize, usize) {
 }
 
 fn obj_get(p: &Predicate, objects: &HashMap<String,usize>, i: usize) -> usize {
-    *objects.get(p.predicate_args[i].as_str()).unwrap()
-}
-
-#[derive(Sexpy)]
-struct Problem {
-    name: String
-}
-
-#[derive(Sexpy)]
-#[sexpy(head=":domain")]
-struct Domain {
-    name: String
-}
-
-#[derive(Sexpy)]
-#[sexpy(head=":objects")]
-struct Objects {
-    objs: Vec<String>
-}
-
-#[derive(Sexpy)]
-#[sexpy(head=":init")]
-struct Init {
-    predicates: Vec<Predicate>
-}
-
-#[derive(Sexpy)]
-#[sexpy(nohead)]
-struct Predicate {
-    predicate_type: String,
-    predicate_args: Vec<String>
-}
-
-#[derive(Sexpy)]
-#[sexpy(head=":goal")]
-struct Goal {
-    and: And
-}
-
-#[derive(Sexpy)]
-struct And {
-    goals: Vec<Predicate>
+    *objects.get(p.get_arg(i)).unwrap()
 }
