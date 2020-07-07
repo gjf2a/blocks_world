@@ -1,5 +1,6 @@
 use super::operators::*;
 use anyhop::{Atom, Method, Task, MethodResult, Goal};
+use std::collections::BTreeMap;
 
 pub fn is_done(b1: usize, state: &BlockState, goal: &BlockGoals) -> bool {
     let pos = state.get_pos(b1);
@@ -107,6 +108,28 @@ fn put(state: &BlockState, pos: BlockPos) -> MethodResult<BlockOperator, BlockMe
     }
 }
 
+#[derive(Clone, PartialOrd, PartialEq, Ord, Eq, Debug)]
+pub struct BlockGoals {
+    stacks: BTreeMap<usize,usize>
+}
+
+impl BlockGoals {
+    pub fn new(goals: Vec<(usize,usize)>) -> Self {
+        let mut result = BlockGoals {stacks: BTreeMap::new()};
+        for (top, bottom) in goals {
+            result.stacks.insert(top, bottom);
+        }
+        result
+    }
+
+    pub fn get_pos(&self, block: usize) -> BlockPos {
+        match self.stacks.get(&block) {
+            Some(other) => BlockPos::On(*other),
+            None => BlockPos::Table
+        }
+    }
+}
+
 impl Goal for BlockGoals {
     type O = BlockOperator;
     type M = BlockMethod;
@@ -117,6 +140,7 @@ impl Goal for BlockGoals {
     }
 
     fn accepts(&self, state: &Self::S) -> bool {
-        self.all_met_in(state)
+        self.stacks.iter()
+            .all(|goal| state.get_pos(*goal.0) == BlockPos::On(*goal.1))
     }
 }

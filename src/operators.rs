@@ -1,39 +1,6 @@
 use std::collections::{BTreeSet, BTreeMap};
 use anyhop::{Atom, Operator};
 
-pub fn is_valid(plan: &Vec<BlockOperator>, start: &BlockState, goal: &BlockGoals) -> bool {
-    let mut state = start.clone();
-    let preconds_met = plan.iter().all(|step| step.attempt_update(&mut state));
-    preconds_met && goal.all_met_in(&state)
-}
-
-#[derive(Clone, PartialOrd, PartialEq, Ord, Eq, Debug)]
-pub struct BlockGoals {
-    stacks: BTreeMap<usize,usize>
-}
-
-impl BlockGoals {
-    pub fn new(goals: Vec<(usize,usize)>) -> Self {
-        let mut result = BlockGoals {stacks: BTreeMap::new()};
-        for (top, bottom) in goals {
-            result.stacks.insert(top, bottom);
-        }
-        result
-    }
-
-    pub fn get_pos(&self, block: usize) -> BlockPos {
-        match self.stacks.get(&block) {
-            Some(other) => BlockPos::On(*other),
-            None => BlockPos::Table
-        }
-    }
-
-    pub fn all_met_in(&self, state: &BlockState) -> bool {
-        self.stacks.iter()
-            .all(|goal| state.get_pos(*goal.0) == BlockPos::On(*goal.1))
-    }
-}
-
 #[derive(Clone, PartialOrd, PartialEq, Ord, Eq, Debug)]
 pub struct BlockState {
     stacks: BTreeMap<usize,usize>,

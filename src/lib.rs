@@ -4,9 +4,9 @@ pub mod pddl_parser;
 
 #[cfg(test)]
 mod tests {
-    use crate::operators::{BlockState, BlockGoals, BlockOperator, is_valid};
-    use anyhop::{find_first_plan, Task, BacktrackPreference, BacktrackStrategy, AnytimePlannerBuilder};
-    use crate::methods::BlockMethod;
+    use crate::operators::{BlockState, BlockOperator};
+    use anyhop::{find_first_plan, Task, BacktrackPreference, BacktrackStrategy, AnytimePlannerBuilder, Goal};
+    use crate::methods::{BlockGoals, BlockMethod};
     use BlockOperator::*;
     use crate::pddl_parser::make_block_problem_from;
 
@@ -18,7 +18,7 @@ mod tests {
                                    &vec![Task::Method(BlockMethod::MoveBlocks)], 3).unwrap();
         println!("{:?}", plan);
         assert_eq!(plan, vec![Unstack(0, 1), PutDown(0), PickUp(1), Stack(1, 2), PickUp(0), Stack(0, 1)]);
-        assert!(is_valid(&plan, &start, &goal));
+        assert!(goal.plan_valid(&start, &plan));
     }
 
     #[test]
@@ -27,7 +27,7 @@ mod tests {
         let goal = BlockGoals::new(vec![(1, 2), (0, 3)]);
         let plan = find_first_plan(&start, &goal, &vec![Task::Method(BlockMethod::MoveBlocks)], 3).unwrap();
         println!("{:?}", plan);
-        assert!(is_valid(&plan, &start, &goal));
+        assert!(goal.plan_valid(&start, &plan));
     }
 
     pub fn big_test_states() -> (BlockState, BlockGoals) {
@@ -41,7 +41,7 @@ mod tests {
         let (start, goal) = big_test_states();
         let plan = find_first_plan(&start, &goal, &vec![Task::Method(BlockMethod::MoveBlocks)], 3).unwrap();
         println!("{:?}", plan);
-        assert!(is_valid(&plan, &start, &goal));
+        assert!(goal.plan_valid(&start, &plan));
     }
 
     #[test]

@@ -1,4 +1,5 @@
-use crate::operators::{BlockState, BlockGoals};
+use crate::operators::BlockState;
+use crate::methods::BlockGoals;
 use std::{io,fs};
 use std::collections::BTreeMap;
 use pddl_problem_parser::{Predicate, PddlProblem};
