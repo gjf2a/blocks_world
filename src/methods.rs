@@ -110,8 +110,13 @@ fn put(state: &BlockState, pos: BlockPos) -> MethodResult<BlockOperator, BlockMe
 impl Goal for BlockGoals {
     type O = BlockOperator;
     type M = BlockMethod;
+    type S = BlockState;
 
     fn starting_tasks(&self) -> Vec<Task<BlockOperator, BlockMethod>> {
         vec![Task::Method(BlockMethod::MoveBlocks)]
+    }
+
+    fn accepts(&self, state: &Self::S) -> bool {
+        self.all_met_in(state)
     }
 }
