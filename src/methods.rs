@@ -76,7 +76,7 @@ fn move_blocks(state: &BlockState, goal: &BlockGoals) -> MethodResult<BlockOpera
             _ => None
         })
         .collect();
-    if waiting.len() == 0 {PlanFound} else {TaskLists(waiting)}
+    TaskLists(waiting)
 }
 
 fn move_one(block: usize, pos: BlockPos) -> MethodResult<BlockOperator, BlockMethod> {

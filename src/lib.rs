@@ -5,7 +5,7 @@ pub mod pddl_parser;
 #[cfg(test)]
 mod tests {
     use crate::operators::{BlockState, BlockOperator};
-    use anyhop::{find_first_plan, Task, BacktrackPreference, BacktrackStrategy, AnytimePlannerBuilder, Goal};
+    use anyhop::{find_first_plan, Task, BacktrackPreference, AnytimePlannerBuilder, Goal};
     use crate::methods::{BlockGoals, BlockMethod};
     use BlockOperator::*;
     use crate::pddl_parser::make_block_problem_from;
@@ -60,9 +60,9 @@ mod tests {
 
     #[test]
     pub fn anytime_blocks() {
-        use BacktrackStrategy::*; use BacktrackPreference::*;
+        use BacktrackPreference::*;
         let (start, goal) = big_test_states();
-        for strategy in vec![Alternate(LeastRecent), Steady(LeastRecent), Steady(MostRecent)] {
+        for strategy in vec![LeastRecent, MostRecent] {
             for apply_cutoff in vec![false, true] {
                 let outcome = AnytimePlannerBuilder::state_goal(&start, &goal)
                     .apply_cutoff(apply_cutoff)
