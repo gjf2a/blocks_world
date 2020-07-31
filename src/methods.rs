@@ -61,9 +61,13 @@ impl Method for BlockMethod {
     }
 }
 
+fn get_status(state: &BlockState, goal: &BlockGoals) -> Vec<Status> {
+    state.all_blocks().iter().map(|b| Status::new(*b, state, goal)).collect()
+}
+
 fn move_blocks(state: &BlockState, goal: &BlockGoals) -> MethodResult<BlockOperator, BlockMethod> {
     use BlockMethod::*; use MethodResult::*; use Task::*;
-    let status: Vec<Status> = state.all_blocks().iter().map(|b| Status::new(*b, state, goal)).collect();
+    let status = get_status(state, goal);
     for stat in status.iter() {
         if let Status::Move(b, pos) = stat {
             return TaskLists(vec![vec![Method(MoveOne(*b, *pos)), Method(MoveBlocks)]])
@@ -134,6 +138,7 @@ impl Goal for BlockGoals {
     type O = BlockOperator;
     type M = BlockMethod;
     type S = BlockState;
+    type C = usize;
 
     fn starting_tasks(&self) -> Vec<Task<BlockOperator, BlockMethod>> {
         vec![Task::Method(BlockMethod::MoveBlocks)]
@@ -142,5 +147,13 @@ impl Goal for BlockGoals {
     fn accepts(&self, state: &Self::S) -> bool {
         self.stacks.iter()
             .all(|goal| state.get_pos(*goal.0) == BlockPos::On(*goal.1))
+    }
+
+    fn distance_from(&self, state: &Self::S) -> Self::C {
+        let status = get_status(state, self);
+        let num_done = status.iter()
+            .filter(|s| match s {Status::Done(_) => true, _ => false})
+            .count();
+        status.len() - num_done
     }
 }

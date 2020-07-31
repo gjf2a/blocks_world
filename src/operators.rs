@@ -1,5 +1,6 @@
 use std::collections::{BTreeSet, BTreeMap};
 use anyhop::{Atom, Operator};
+use crate::methods::BlockGoals;
 
 #[derive(Clone, PartialOrd, PartialEq, Ord, Eq, Debug)]
 pub struct BlockState {
@@ -107,6 +108,16 @@ pub enum BlockOperator {
 
 impl Operator for BlockOperator {
     type S = BlockState;
+    type C = usize;
+    type G = BlockGoals;
+
+    fn cost(&self, _: &BlockState, _: &BlockGoals) -> usize {
+        1
+    }
+
+    fn zero_cost() -> usize {
+        0
+    }
 
     fn attempt_update(&self, state: &mut BlockState) -> bool {
         use BlockOperator::*;
